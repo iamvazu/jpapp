@@ -313,14 +313,14 @@ body{
       <div class="output-row">
         <div class="out-left">
           <div class="out-icon cwt">◈</div>
-          <div><div class="out-label">Copper Weight</div><div class="out-sublabel">grams</div></div>
+          <div><div class="out-label">Copper Weight</div><div class="out-sublabel">kg per 100m</div></div>
         </div>
         <div class="out-value" id="outCwt">—</div>
       </div>
       <div class="output-row">
         <div class="out-left">
           <div class="out-icon rwt">◇</div>
-          <div><div class="out-label">Resin / Tape Weight</div><div class="out-sublabel">grams</div></div>
+          <div><div class="out-label">Resin / Tape Weight</div><div class="out-sublabel">kg per 100m</div></div>
         </div>
         <div class="out-value" id="outRwt">—</div>
       </div>
@@ -365,24 +365,24 @@ body{
         <div class="formula-block">
           <div class="formula-title">Copper Weight (per 100m)</div>
           <div class="formula-text">
-            CW = Size × 0.7854 × 100 / 1000<br>
-            &nbsp;&nbsp;&nbsp;= Size × 0.950 (approx)
+            CW = Size × 0.950<br>
+            <em>(Result in kg per 100m)</em>
           </div>
         </div>
         <div class="formula-block">
           <div class="formula-title">Resin / Tape Weight (per 100m)</div>
           <div class="formula-text">
-            z = Dia + Thickness × 2<br>
-            a = z × z × 40 × 40<br>
-            b = Dia × Dia × 40 × 40<br>
-            RW = (a − b) × 111.52 / 1000
+            cdia = √(Size) × 1.128<br>
+            dia = cdia + (Thickness × 2)<br>
+            RW = (dia² - cdia²) × 178.43 / 1000<br>
+            <em>(Result in kg per 100m)</em>
           </div>
         </div>
         <div class="formula-block">
           <div class="formula-title">Pricing</div>
           <div class="formula-text">
-            Copper Price = CW × Rate / 1000<br>
-            Tape Price &nbsp;&nbsp;= RW × Rate / 1000<br>
+            Copper Price = CW × Rate<br>
+            Tape Price &nbsp;&nbsp;= RW × Rate<br>
             Total = Copper + Tape
           </div>
         </div>
@@ -414,32 +414,31 @@ function calculate(event) {
   if (!crate || crate <= 0) { showToast('Enter a valid Copper Rate'); return; }
   if (!rrate || rrate <= 0) { showToast('Enter a valid Resin Rate'); return; }
 
-  // Dia = sqrt(size) * 1.128 + thickness*2
-  const dia = Math.sqrt(size) * 1.128 + thickness + thickness;
+  // 1. Overall Diameter (mm)
+  const conductorDia = Math.sqrt(size) * 1.128;
+  const dia = conductorDia + (thickness * 2);
 
-  // Copper weight per 100m (grams) = size * 0.7854 * 100 * density...
-  // From VBA: copporwt = size * size * 0.7854 ... but the help says size * 0.950
-  // The code shows: txtdia.Value = val(txtsize) * val(txtsize) * 0.7854
-  // That seems to be an area calc. Let me use the help screen formula:
-  // Copper Weight (per 100 grams) = Size × 0.950
+  // 2. Copper Weight (kg per 100m)
+  // Formula: Size * 0.950 gives weight in kg for 100 meters
   const copporwt = round2(size * 0.950);
 
-  // Resin weight per 100m
-  // z = dia + thickness + thickness (outer dia)
-  const z = dia + thickness + thickness;
-  const a = z * z * 40 * 40;
-  const b = dia * dia * 40 * 40;
+  // 3. Resin Weight (kg per 100m)
+  // We calculate the volume difference between outer dia and conductor dia
+  const a = dia * dia * 40 * 40;
+  const b = conductorDia * conductorDia * 40 * 40;
+  // Factor 111.52 / 1000 converts the diameter-based area to kg/100m
   const resinwt = round2(((a - b) * 111.52) / 1000);
 
-  // Prices
-  const cprice = round2(copporwt * crate / 1000);
-  const rprice = round2(resinwt * rrate / 1000);
+  // 4. Prices (₹)
+  // Weight is in kg, Rate is in ₹/kg.
+  const cprice = round2(copporwt * crate);
+  const rprice = round2(resinwt * rrate);
   const total = round2(cprice + rprice);
 
   // Display
   document.getElementById('outDia').textContent = round2(dia) + ' mm';
-  document.getElementById('outCwt').textContent = copporwt + ' g';
-  document.getElementById('outRwt').textContent = resinwt + ' g';
+  document.getElementById('outCwt').textContent = copporwt + ' kg';
+  document.getElementById('outRwt').textContent = resinwt + ' kg';
   document.getElementById('outCp').innerHTML = '<span class="currency">₹</span>' + cprice.toFixed(2);
   document.getElementById('outRp').innerHTML = '<span class="currency">₹</span>' + rprice.toFixed(2);
   document.getElementById('outTotal').innerHTML = '<span class="currency">₹</span>' + total.toFixed(2);
