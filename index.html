@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jain Polymer">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Jain Polymer Co. — Wire Cost Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f1a;--surface:#181829;--surface2:#1e1e35;--border:#2a2a4a;
+  --accent:#e8c547;--accent2:#c9a83a;--accent-glow:rgba(232,197,71,.12);
+  --copper:#d4845a;--copper-light:#e8a87c;
+  --resin:#5ab8a9;--resin-light:#7dd4c5;
+  --text:#e8e6f0;--text2:#9d9bb8;--text3:#6b698a;
+  --radius:14px;--radius-sm:10px;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'Space Mono',monospace;
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-body);background:var(--bg);color:var(--text);
+  min-height:100vh;min-height:100dvh;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 0%,rgba(232,197,71,.04),transparent),
+    radial-gradient(ellipse 60% 50% at 80% 100%,rgba(90,184,169,.03),transparent);
+}
+
+/* ─── HEADER ─── */
+.header{
+  padding:1.5rem 1.25rem .75rem;text-align:center;position:relative;
+}
+.header::after{
+  content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+}
+.logo{
+  display:inline-flex;align-items:center;gap:.6rem;margin-bottom:.35rem;
+}
+.logo-icon{
+  width:36px;height:36px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:grid;place-items:center;
+  font-weight:700;font-size:1.1rem;color:var(--bg);
+  box-shadow:0 2px 12px rgba(232,197,71,.25);
+}
+.logo-text{font-size:1.15rem;font-weight:700;letter-spacing:.02em;color:var(--text)}
+.subtitle{font-size:.72rem;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;font-weight:500}
+.company{font-size:.65rem;color:var(--text3);margin-top:.2rem;opacity:.7}
+
+/* ─── MAIN ─── */
+.main{max-width:480px;margin:0 auto;padding:.75rem 1rem 6rem}
+
+/* ─── SECTION ─── */
+.section{margin-bottom:1rem}
+.section-label{
+  display:flex;align-items:center;gap:.5rem;
+  font-size:.65rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:.65rem;padding-left:.15rem;
+}
+.section-label .dot{width:6px;height:6px;border-radius:50%}
+.section-label .dot.input{background:var(--accent)}
+.section-label .dot.output{background:var(--resin)}
+
+/* ─── CARD ─── */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.field{
+  padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem;
+  border-bottom:1px solid var(--border);position:relative;
+  transition:background .2s;
+}
+.field:last-child{border-bottom:none}
+.field:focus-within{background:var(--accent-glow)}
+.field-icon{
+  width:34px;height:34px;border-radius:var(--radius-sm);
+  display:grid;place-items:center;flex-shrink:0;
+  font-size:.95rem;
+}
+.field-icon.size{background:rgba(232,197,71,.1);color:var(--accent)}
+.field-icon.thick{background:rgba(232,197,71,.08);color:var(--accent2)}
+.field-icon.copper{background:rgba(212,132,90,.1);color:var(--copper-light)}
+.field-icon.resin{background:rgba(90,184,169,.1);color:var(--resin-light)}
+.field-body{flex:1;min-width:0}
+.field-label{font-size:.7rem;color:var(--text3);font-weight:500;margin-bottom:.15rem}
+.field-input{
+  width:100%;background:none;border:none;outline:none;
+  font-family:var(--font-mono);font-size:1.05rem;font-weight:700;
+  color:var(--text);padding:0;
+}
+.field-input::placeholder{color:var(--text3);font-weight:400;opacity:.5}
+.field-unit{
+  font-size:.65rem;color:var(--text3);font-weight:500;
+  background:var(--surface2);padding:.2rem .5rem;border-radius:6px;
+  white-space:nowrap;flex-shrink:0;
+}
+
+/* ─── CALCULATE BUTTON ─── */
+.calc-wrap{padding:.75rem 0}
+.btn-calc{
+  width:100%;padding:.95rem;border:none;border-radius:var(--radius);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:var(--bg);font-family:var(--font-body);font-size:.9rem;font-weight:700;
+  letter-spacing:.06em;cursor:pointer;
+  transition:all .2s;position:relative;overflow:hidden;
+  box-shadow:0 4px 20px rgba(232,197,71,.2);
+}
+.btn-calc:active{transform:scale(.98);box-shadow:0 2px 10px rgba(232,197,71,.15)}
+.btn-calc .ripple{
+  position:absolute;border-radius:50%;background:rgba(255,255,255,.3);
+  transform:scale(0);animation:ripple .6s ease-out;pointer-events:none;
+}
+@keyframes ripple{to{transform:scale(4);opacity:0}}
+
+/* ─── OUTPUT CARD ─── */
+.output-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+  opacity:.4;transform:translateY(6px);
+  transition:all .4s cubic-bezier(.22,1,.36,1);
+}
+.output-card.active{opacity:1;transform:translateY(0)}
+.output-row{
+  padding:.8rem 1rem;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.output-row:last-child{border-bottom:none}
+.output-row.total{background:var(--accent-glow)}
+.out-left{display:flex;align-items:center;gap:.65rem}
+.out-icon{
+  width:30px;height:30px;border-radius:8px;
+  display:grid;place-items:center;font-size:.8rem;
+}
+.out-icon.dia{background:rgba(232,197,71,.08);color:var(--accent)}
+.out-icon.cwt{background:rgba(212,132,90,.08);color:var(--copper-light)}
+.out-icon.rwt{background:rgba(90,184,169,.08);color:var(--resin-light)}
+.out-icon.cp{background:rgba(212,132,90,.1);color:var(--copper)}
+.out-icon.rp{background:rgba(90,184,169,.1);color:var(--resin)}
+.out-icon.tot{background:rgba(232,197,71,.12);color:var(--accent)}
+.out-label{font-size:.75rem;color:var(--text2);font-weight:500}
+.out-sublabel{font-size:.6rem;color:var(--text3);margin-top:.1rem}
+.out-value{
+  font-family:var(--font-mono);font-size:1rem;font-weight:700;
+  color:var(--text);text-align:right;
+  transition:all .3s;
+}
+.out-value.highlight{color:var(--accent);font-size:1.1rem}
+.out-value .currency{font-size:.7rem;color:var(--text3);margin-right:.15rem}
+
+/* ─── HELP PANEL ─── */
+.help-toggle{
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  margin-top:1rem;padding:.6rem;border:none;background:none;
+  color:var(--text3);font-family:var(--font-body);font-size:.72rem;
+  font-weight:500;cursor:pointer;width:100%;
+  letter-spacing:.05em;transition:color .2s;
+}
+.help-toggle:hover{color:var(--text2)}
+.help-toggle svg{transition:transform .3s}
+.help-toggle.open svg{transform:rotate(180deg)}
+.help-panel{
+  max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.22,1,.36,1);
+}
+.help-panel.open{max-height:600px}
+.help-inner{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1rem;margin-top:.5rem;
+}
+.formula-block{margin-bottom:.85rem}
+.formula-block:last-child{margin-bottom:0}
+.formula-title{
+  font-size:.65rem;color:var(--accent);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:.35rem;
+}
+.formula-text{
+  font-family:var(--font-mono);font-size:.75rem;color:var(--text2);
+  line-height:1.7;background:var(--surface2);padding:.6rem .75rem;
+  border-radius:var(--radius-sm);
+}
+
+/* ─── CLEAR BTN ─── */
+.btn-clear{
+  width:100%;padding:.7rem;border:1px solid var(--border);
+  border-radius:var(--radius);background:none;
+  color:var(--text3);font-family:var(--font-body);
+  font-size:.78rem;font-weight:500;cursor:pointer;
+  margin-top:.75rem;transition:all .2s;
+}
+.btn-clear:active{background:var(--surface2);color:var(--text2)}
+
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:.6rem 1.2rem;
+  font-size:.78rem;color:var(--text2);
+  box-shadow:0 8px 30px rgba(0,0,0,.4);
+  transition:transform .4s cubic-bezier(.22,1,.36,1);
+  z-index:100;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ─── INSTALL BANNER ─── */
+.install-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:.75rem 1rem;display:none;align-items:center;gap:.75rem;
+  z-index:50;
+}
+.install-bar.show{display:flex}
+.install-text{flex:1;font-size:.78rem;color:var(--text2)}
+.install-text strong{color:var(--text);font-weight:600}
+.btn-install{
+  padding:.5rem 1rem;border:none;border-radius:8px;
+  background:var(--accent);color:var(--bg);font-family:var(--font-body);
+  font-size:.78rem;font-weight:600;cursor:pointer;flex-shrink:0;
+}
+.btn-dismiss{
+  background:none;border:none;color:var(--text3);font-size:1.1rem;
+  cursor:pointer;padding:.25rem;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+.section:nth-child(1){animation-delay:.05s}
+.section:nth-child(2){animation-delay:.12s}
+.section:nth-child(3){animation-delay:.18s}
+.section:nth-child(4){animation-delay:.24s}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">JP</div>
+    <div class="logo-text">Jain Polymer Co.</div>
+  </div>
+  <div class="subtitle">Wire Cost Calculator</div>
+  <div class="company">Lakshmi Precision Screws Ltd.</div>
+</header>
+
+<main class="main">
+
+  <!-- INPUT -->
+  <div class="section">
+    <div class="section-label"><span class="dot input"></span> Input Parameters</div>
+    <div class="card">
+      <div class="field">
+        <div class="field-icon size">⊡</div>
+        <div class="field-body">
+          <div class="field-label">Conductor Size</div>
+          <input class="field-input" id="txtsize" type="number" inputmode="decimal" step="any" placeholder="0.00">
+        </div>
+        <div class="field-unit">sq mm</div>
+      </div>
+      <div class="field">
+        <div class="field-icon thick">◎</div>
+        <div class="field-body">
+          <div class="field-label">Thickness</div>
+          <input class="field-input" id="txtthickness" type="number" inputmode="decimal" step="any" placeholder="0.00">
+        </div>
+        <div class="field-unit">mm</div>
+      </div>
+      <div class="field">
+        <div class="field-icon copper">◈</div>
+        <div class="field-body">
+          <div class="field-label">Copper Rate</div>
+          <input class="field-input" id="txtcrate" type="number" inputmode="decimal" step="any" placeholder="0.00">
+        </div>
+        <div class="field-unit">₹/kg</div>
+      </div>
+      <div class="field">
+        <div class="field-icon resin">◇</div>
+        <div class="field-body">
+          <div class="field-label">Resin Rate</div>
+          <input class="field-input" id="txtrrate" type="number" inputmode="decimal" step="any" placeholder="0.00">
+        </div>
+        <div class="field-unit">₹/kg</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALCULATE -->
+  <div class="section">
+    <div class="calc-wrap">
+      <button class="btn-calc" id="btnCalc" onclick="calculate()">
+        CALCULATE
+      </button>
+    </div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="section">
+    <div class="section-label"><span class="dot output"></span> Output — Per 100 Meters</div>
+    <div class="card output-card" id="outputCard">
+      <div class="output-row">
+        <div class="out-left">
+          <div class="out-icon dia">⌀</div>
+          <div><div class="out-label">Diameter</div><div class="out-sublabel">Conductor</div></div>
+        </div>
+        <div class="out-value" id="outDia">—</div>
+      </div>
+      <div class="output-row">
+        <div class="out-left">
+          <div class="out-icon cwt">◈</div>
+          <div><div class="out-label">Copper Weight</div><div class="out-sublabel">grams</div></div>
+        </div>
+        <div class="out-value" id="outCwt">—</div>
+      </div>
+      <div class="output-row">
+        <div class="out-left">
+          <div class="out-icon rwt">◇</div>
+          <div><div class="out-label">Resin / Tape Weight</div><div class="out-sublabel">grams</div></div>
+        </div>
+        <div class="out-value" id="outRwt">—</div>
+      </div>
+      <div class="output-row">
+        <div class="out-left">
+          <div class="out-icon cp">₹</div>
+          <div><div class="out-label">Copper Price</div></div>
+        </div>
+        <div class="out-value" id="outCp">—</div>
+      </div>
+      <div class="output-row">
+        <div class="out-left">
+          <div class="out-icon rp">₹</div>
+          <div><div class="out-label">Resin / Tape Price</div></div>
+        </div>
+        <div class="out-value" id="outRp">—</div>
+      </div>
+      <div class="output-row total">
+        <div class="out-left">
+          <div class="out-icon tot">Σ</div>
+          <div><div class="out-label" style="color:var(--accent);font-weight:600">Total Price</div></div>
+        </div>
+        <div class="out-value highlight" id="outTotal">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP -->
+  <div class="section">
+    <button class="help-toggle" id="helpToggle" onclick="toggleHelp()">
+      Formulas & Reference
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="help-panel" id="helpPanel">
+      <div class="help-inner">
+        <div class="formula-block">
+          <div class="formula-title">Diameter</div>
+          <div class="formula-text">
+            Dia = √(Size) × 1.128<br>+ Thickness × 2
+          </div>
+        </div>
+        <div class="formula-block">
+          <div class="formula-title">Copper Weight (per 100m)</div>
+          <div class="formula-text">
+            CW = Size × 0.7854 × 100 / 1000<br>
+            &nbsp;&nbsp;&nbsp;= Size × 0.950 (approx)
+          </div>
+        </div>
+        <div class="formula-block">
+          <div class="formula-title">Resin / Tape Weight (per 100m)</div>
+          <div class="formula-text">
+            z = Dia + Thickness × 2<br>
+            a = z × z × 40 × 40<br>
+            b = Dia × Dia × 40 × 40<br>
+            RW = (a − b) × 111.52 / 1000
+          </div>
+        </div>
+        <div class="formula-block">
+          <div class="formula-title">Pricing</div>
+          <div class="formula-text">
+            Copper Price = CW × Rate / 1000<br>
+            Tape Price &nbsp;&nbsp;= RW × Rate / 1000<br>
+            Total = Copper + Tape
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-clear" onclick="clearAll()">Clear All</button>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div class="install-bar" id="installBar">
+  <div class="install-text"><strong>Install App</strong> — Add to home screen for quick access</div>
+  <button class="btn-install" id="btnInstall">Install</button>
+  <button class="btn-dismiss" onclick="dismissInstall()">✕</button>
+</div>
+
+<script>
+// ─── CALCULATION ENGINE (from JAIN.mdb VBA) ───
+function calculate() {
+  const size = parseFloat(document.getElementById('txtsize').value);
+  const thickness = parseFloat(document.getElementById('txtthickness').value);
+  const crate = parseFloat(document.getElementById('txtcrate').value);
+  const rrate = parseFloat(document.getElementById('txtrrate').value);
+
+  if (!size || size <= 0) { showToast('Enter a valid Conductor Size'); return; }
+  if (!thickness || thickness <= 0) { showToast('Enter a valid Thickness'); return; }
+  if (!crate || crate <= 0) { showToast('Enter a valid Copper Rate'); return; }
+  if (!rrate || rrate <= 0) { showToast('Enter a valid Resin Rate'); return; }
+
+  // Dia = sqrt(size) * 1.128 + thickness*2
+  const dia = Math.sqrt(size) * 1.128 + thickness + thickness;
+
+  // Copper weight per 100m (grams) = size * 0.7854 * 100 * density...
+  // From VBA: copporwt = size * size * 0.7854 ... but the help says size * 0.950
+  // The code shows: txtdia.Value = val(txtsize) * val(txtsize) * 0.7854
+  // That seems to be an area calc. Let me use the help screen formula:
+  // Copper Weight (per 100 grams) = Size × 0.950
+  const copporwt = round2(size * 0.950);
+
+  // Resin weight per 100m
+  // z = dia + thickness + thickness (outer dia)
+  const z = dia + thickness + thickness;
+  const a = z * z * 40 * 40;
+  const b = dia * dia * 40 * 40;
+  const resinwt = round2(((a - b) * 111.52) / 1000);
+
+  // Prices
+  const cprice = round2(copporwt * crate / 1000);
+  const rprice = round2(resinwt * rrate / 1000);
+  const total = round2(cprice + rprice);
+
+  // Display
+  document.getElementById('outDia').textContent = round2(dia) + ' mm';
+  document.getElementById('outCwt').textContent = copporwt + ' g';
+  document.getElementById('outRwt').textContent = resinwt + ' g';
+  document.getElementById('outCp').innerHTML = '<span class="currency">₹</span>' + cprice.toFixed(2);
+  document.getElementById('outRp').innerHTML = '<span class="currency">₹</span>' + rprice.toFixed(2);
+  document.getElementById('outTotal').innerHTML = '<span class="currency">₹</span>' + total.toFixed(2);
+
+  document.getElementById('outputCard').classList.add('active');
+
+  // Ripple on button
+  ripple(event);
+
+  // Save last inputs
+  try {
+    localStorage.setItem('jain_last', JSON.stringify({ size, thickness, crate, rrate }));
+  } catch(e) {}
+}
+
+function round2(v) { return Math.round(v * 100) / 100; }
+
+function clearAll() {
+  ['txtsize','txtthickness','txtcrate','txtrrate'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  ['outDia','outCwt','outRwt','outCp','outRp','outTotal'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+  document.getElementById('outputCard').classList.remove('active');
+  showToast('Cleared');
+}
+
+// ─── HELP ───
+function toggleHelp() {
+  const panel = document.getElementById('helpPanel');
+  const btn = document.getElementById('helpToggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+// ─── TOAST ───
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── RIPPLE ───
+function ripple(e) {
+  const btn = document.getElementById('btnCalc');
+  const r = document.createElement('span');
+  r.classList.add('ripple');
+  const rect = btn.getBoundingClientRect();
+  const sz = Math.max(rect.width, rect.height);
+  r.style.width = r.style.height = sz + 'px';
+  if (e && e.clientX) {
+    r.style.left = (e.clientX - rect.left - sz/2) + 'px';
+    r.style.top = (e.clientY - rect.top - sz/2) + 'px';
+  } else {
+    r.style.left = (rect.width/2 - sz/2) + 'px';
+    r.style.top = (rect.height/2 - sz/2) + 'px';
+  }
+  btn.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+}
+
+// ─── ENTER KEY ───
+document.querySelectorAll('.field-input').forEach(input => {
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') calculate();
+  });
+});
+
+// ─── RESTORE LAST INPUT ───
+try {
+  const last = JSON.parse(localStorage.getItem('jain_last'));
+  if (last) {
+    if (last.crate) document.getElementById('txtcrate').value = last.crate;
+    if (last.rrate) document.getElementById('txtrrate').value = last.rrate;
+  }
+} catch(e) {}
+
+// ─── PWA INSTALL ───
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBar').classList.add('show');
+});
+
+document.getElementById('btnInstall').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBar').classList.remove('show');
+  if (outcome === 'accepted') showToast('App installed!');
+});
+
+function dismissInstall() {
+  document.getElementById('installBar').classList.remove('show');
+}
+
+// ─── SERVICE WORKER ───
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
