@@ -538,17 +538,7 @@ if ('serviceWorker' in navigator) {
 }
 // Initialize
 window.addEventListener('DOMContentLoaded', () => {
-  // Load last inputs
-  try {
-    const last = JSON.parse(localStorage.getItem('jain_last'));
-    if (last) {
-      document.getElementById('txtsize').value = last.size;
-      document.getElementById('txtthickness').value = last.thickness;
-      document.getElementById('txtcrate').value = last.crate;
-      document.getElementById('txtrrate').value = last.rrate;
-      calculate();
-    }
-  } catch(e) {}
+
 
   // Real-time listeners
   ['txtsize', 'txtthickness', 'txtcrate', 'txtrrate'].forEach(id => {
