@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jain-polymer-v1';
+const CACHE_NAME = 'jain-polymer-v2';
 const ASSETS = [
   '/',
   '/index.html',
