@@ -293,7 +293,7 @@ body{
   <!-- CALCULATE -->
   <div class="section">
     <div class="calc-wrap">
-      <button class="btn-calc" id="btnCalc" onclick="calculate()">
+      <button class="btn-calc" id="btnCalc" onclick="calculate(event)">
         CALCULATE
       </button>
     </div>
@@ -403,7 +403,7 @@ body{
 
 <script>
 // ─── CALCULATION ENGINE (from JAIN.mdb VBA) ───
-function calculate() {
+function calculate(event) {
   const size = parseFloat(document.getElementById('txtsize').value);
   const thickness = parseFloat(document.getElementById('txtthickness').value);
   const crate = parseFloat(document.getElementById('txtcrate').value);
@@ -506,18 +506,11 @@ function ripple(e) {
 // ─── ENTER KEY ───
 document.querySelectorAll('.field-input').forEach(input => {
   input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') calculate();
+    if (e.key === 'Enter') calculate(e);
   });
 });
 
-// ─── RESTORE LAST INPUT ───
-try {
-  const last = JSON.parse(localStorage.getItem('jain_last'));
-  if (last) {
-    if (last.crate) document.getElementById('txtcrate').value = last.crate;
-    if (last.rrate) document.getElementById('txtrrate').value = last.rrate;
-  }
-} catch(e) {}
+
 
 // ─── PWA INSTALL ───
 let deferredPrompt;
@@ -544,6 +537,30 @@ function dismissInstall() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+// Initialize
+window.addEventListener('DOMContentLoaded', () => {
+  // Load last inputs
+  try {
+    const last = JSON.parse(localStorage.getItem('jain_last'));
+    if (last) {
+      document.getElementById('txtsize').value = last.size;
+      document.getElementById('txtthickness').value = last.thickness;
+      document.getElementById('txtcrate').value = last.crate;
+      document.getElementById('txtrrate').value = last.rrate;
+      calculate();
+    }
+  } catch(e) {}
+
+  // Real-time listeners
+  ['txtsize', 'txtthickness', 'txtcrate', 'txtrrate'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      const size = document.getElementById('txtsize').value;
+      const thick = document.getElementById('txtthickness').value;
+      // Auto-calc if core parameters are present
+      if(size && thick) calculate();
+    });
+  });
+});
 </script>
 </body>
 </html>
